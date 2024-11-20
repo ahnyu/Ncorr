@@ -138,7 +138,7 @@ void count_triangles(
     std::cout << "Phase 1 time cost: " << duration1.count() << " microseconds" << std::endl;
     std::cout << "Phase 2 time cost: " << duration2.count() << " microseconds" << std::endl;
     std::cout << "Phase 3 time cost: " << duration3.count() << " microseconds" << std::endl;
-    std::cout << "Phase 3 time cost: " << duration3.count() << " microseconds" << std::endl;
+    std::cout << "Phase 4 time cost: " << duration4.count() << " microseconds" << std::endl;
     
 
     // Copy results to output array
