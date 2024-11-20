@@ -8,6 +8,8 @@
 #include <pybind11/numpy.h>
 #include <vector>
 #include <omp.h>
+#include <iostream>
+#include <chrono>
 
 namespace py = pybind11;
 
@@ -22,6 +24,7 @@ void count_triangles(
     int bin_type,
     py::array_t<double> triangle_counts_output
 ) {
+    auto start = std::chrono::high_resolution_clock::now();
     // Check input dimensions and get data pointers
     if (p1_array.ndim() != 2 || p1_array.shape(1) != 4)
         throw std::runtime_error("p1_array must have shape (N, 4)");
@@ -56,6 +59,7 @@ void count_triangles(
     // Convert inputs to C++ data structures
     std::vector<double4> p1(Np1), p2(Np2), p3(Np3);
     std::vector<double> bins(bins_ptr, bins_ptr + bins_buf.shape[0]);
+    auto check1 = std::chrono::high_resolution_clock::now();
 
     #pragma omp parallel for
     for (size_t i = 0; i < Np1; ++i) {
@@ -69,7 +73,8 @@ void count_triangles(
     for (size_t i = 0; i < Np3; ++i) {
         p3[i] = {p3_ptr[4 * i], p3_ptr[4 * i + 1], p3_ptr[4 * i + 2], p3_ptr[4 * i + 3]};
     }
-
+    auto check2 = std::chrono::high_resolution_clock::now();
+    
     double3 box = {box_x, box_y, box_z};
     double rMax = bins.back();
     double rMin = bins.front();
@@ -104,7 +109,8 @@ void count_triangles(
     for (size_t i = 0; i < p3Cell.size(); ++i) {
         p3CellSize[i] = p3Cell[i].size();
     }
-
+    auto check3 = std::chrono::high_resolution_clock::now();
+    
     // Call the counting function
     countTrianglesThreeDBoxCPU(
         p1,
@@ -122,6 +128,18 @@ void count_triangles(
         numCells,
         shifts
     );
+    auto check4 = std::chrono::high_resolution_clock::now();
+    
+    auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(check1 - start);
+    auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(check2 - check1);
+    auto duration3 = std::chrono::duration_cast<std::chrono::microseconds>(check3 - check2);
+    auto duration4 = std::chrono::duration_cast<std::chrono::microseconds>(check4 - check3);
+    
+    std::cout << "Phase 1 time cost: " << duration1.count() << " microseconds" << std::endl;
+    std::cout << "Phase 2 time cost: " << duration2.count() << " microseconds" << std::endl;
+    std::cout << "Phase 3 time cost: " << duration3.count() << " microseconds" << std::endl;
+    std::cout << "Phase 3 time cost: " << duration3.count() << " microseconds" << std::endl;
+    
 
     // Copy results to output array
     std::copy(triangle_counts.begin(), triangle_counts.end(), counts_ptr);
