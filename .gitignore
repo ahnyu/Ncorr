@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# Build directories
+build/
+python/*.so
+python/*.pyd
+python/__pycache__/
+
