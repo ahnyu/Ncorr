@@ -103,9 +103,11 @@ void count_triangles(
     gridParticles(p3, p3Cell, cellSize, numCells);
 
     std::vector<int> p2CellSize(p2Cell.size()), p3CellSize(p3Cell.size());
+    #pragma omp parallel for
     for (size_t i = 0; i < p2Cell.size(); ++i) {
         p2CellSize[i] = p2Cell[i].size();
     }
+    #pragma omp parallel for
     for (size_t i = 0; i < p3Cell.size(); ++i) {
         p3CellSize[i] = p3Cell[i].size();
     }
